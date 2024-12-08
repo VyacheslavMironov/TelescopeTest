@@ -1,0 +1,64 @@
+version: "3.8"
+
+
+services:
+  nginx:
+    container_name: ${NAME}_nginx
+    hostname: ${NAME}_nginx
+    restart: always
+    ports:
+      - ${BACKEND_HTTP_PORT}:8000
+      - ${FRONTEND_HTTP_PORT}:5000
+    build:
+      context: ${DOCKER_PATH}/nginx
+      dockerfile: Dockerfile
+    volumes:
+      - ./${DOCKER_PATH}/${BACKEND_HTTP_LOCAL_CONFIG_PATH}:${BACKEND_HTTP_CONTAINER_CONFIG_PATH}:ro
+      - ./${DOCKER_PATH}/${FRONTEND_HTTP_LOCAL_CONFIG_PATH}:${FRONTEND_HTTP_CONTAINER_CONFIG_PATH}:ro
+      - ./${BACKEND_LOCAL_PATH}:${BACKEND_CONTAINER_PATH}
+      - ./${FRONTEND_LOCAL_PATH}:${FRONTEND_CONTAINER_PATH}
+    networks:
+      - app
+
+  php-fpm:
+    container_name: ${NAME}_php-fpm
+    hostname: ${NAME}_php-fpm
+    environment:
+      docker: "true"
+    extra_hosts:
+      - ${PHP_FPM_EXTRA_HOST}
+    build:
+      context: ${DOCKER_PATH}/php-fpm
+      dockerfile: Dockerfile
+    env_file:
+      - ${DOCKER_PATH}/php-fpm/conf/xdebug.env
+    volumes:
+      - ./${BACKEND_LOCAL_PATH}:${BACKEND_CONTAINER_PATH}
+      - ./${DOCKER_PATH}/php-fpm/conf/php.ini:${PHP_FPM_CONFIG_PATH}:ro
+    depends_on:
+      - nginx
+    networks:
+      - app
+
+  node:
+    container_name: ${NAME}_node
+    hostname: ${NAME}_node
+    environment:
+      docker: "true"
+    build:
+      context: ${DOCKER_PATH}/node
+      dockerfile: Dockerfile
+    volumes:
+      - ./${FRONTEND_LOCAL_PATH}:${FRONTEND_CONTAINER_PATH}
+    depends_on:
+      - php-fpm
+
+
+volumes:
+  v-db_data:
+    driver: local
+
+
+networks:
+  app:
+    driver: 'bridge'
