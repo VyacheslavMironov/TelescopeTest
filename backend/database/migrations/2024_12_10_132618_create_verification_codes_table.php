@@ -11,16 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('verification_codes', function (Blueprint $table) {
             $table->id();
-            $table->rememberToken();
+            $table->foreignId('user_id')->nullable()->default(null)->constrained('users', 'id')->onDelete('cascade')->onUpdate('cascade');
             $table->timestampTz('created_at')->useCurrent();
             $table->timestampTz('updated_at')->useCurrent();
             $table->timestampTz('deleted_at')->nullable(true)->default(null);
-            $table->string('username', 255)->nullable();
-            $table->string('email', 255)->unique();
-            $table->string('phone', 18)->nullable()->unique(); // +7 (000) 000-00-00
-            $table->string('password', 255);
+            $table->string('code', 6)->unique();
+            $table->enum('method', ['sms', 'email', 'telegram']);
         });
     }
 
@@ -29,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('verification_codes');
     }
 };

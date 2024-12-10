@@ -30,8 +30,13 @@
     </li>
     <br />
     <li>
-        <span>Запустить сборку фронтенда:</span><br>
-        <b style="color: #222;">(sudo) docker-compose run node run build</b><br>
+        <span>Заполнить базу тестовыми данными:</span><br>
+        <b style="color: #222;">(sudo) docker-compose run php-fpm php artisan db:seed</b><br>
+    </li>
+    <br />
+    <li>
+        <span>Сгенерировать CSRF токен:</span><br>
+        <b style="color: #222;">(sudo) docker-compose run php-fpm php artisan key:generate</b><br>
     </li>
     <br />
     <li>
